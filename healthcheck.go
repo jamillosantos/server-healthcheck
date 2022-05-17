@@ -16,7 +16,9 @@ var (
 
 type Healthcheck struct {
 	checkerTimeout time.Duration
+	hcLock         sync.RWMutex
 	healthCheckers map[string]Checker
+	rdLock         sync.RWMutex
 	readyCheckers  map[string]Checker
 }
 
@@ -33,12 +35,30 @@ func NewHealthcheck(opts ...Option) *Healthcheck {
 	return r
 }
 
+func (s *Healthcheck) AddHealthCheck(name string, check Checker) {
+	s.hcLock.Lock()
+	s.healthCheckers[name] = check
+	s.hcLock.Unlock()
+}
+
+func (s *Healthcheck) AddReadyCheck(name string, check Checker) {
+	s.rdLock.Lock()
+	s.readyCheckers[name] = check
+	s.rdLock.Unlock()
+}
+
 func (s *Healthcheck) Health(ctx context.Context) *CheckResponse {
-	return s.generateResponse(ctx, s.healthCheckers)
+	s.hcLock.RLock()
+	r := s.generateResponse(ctx, s.healthCheckers)
+	s.hcLock.RUnlock()
+	return r
 }
 
 func (s *Healthcheck) Ready(ctx context.Context) *CheckResponse {
-	return s.generateResponse(ctx, s.readyCheckers)
+	s.rdLock.RLock()
+	r := s.generateResponse(ctx, s.readyCheckers)
+	s.rdLock.RUnlock()
+	return r
 }
 
 func (s *Healthcheck) generateResponse(ctx context.Context, checks map[string]Checker) *CheckResponse {

@@ -110,7 +110,7 @@ func (s *Healthcheck) generateResponse(ctx context.Context, checks map[string]Ch
 				jsonResponse.StatusCode = errorToStatus(jsonResponse.StatusCode, err)
 			}
 			jsonResponse.Checks[key] = CheckResponseEntry{
-				Duration: time.Since(st),
+				Duration: time.Since(st).String(),
 				Error:    errorMessage(err),
 			}
 			checksM.Unlock()

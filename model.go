@@ -1,7 +1,5 @@
 package svchealthcheck
 
-import "time"
-
 const (
 	HealthPath = "/healthz"
 	ReadyPath  = "/readyz"
@@ -14,6 +12,6 @@ type CheckResponse struct {
 }
 
 type CheckResponseEntry struct {
-	Error    string        `json:"error,omitempty"`
-	Duration time.Duration `json:"duration"`
+	Error    string `json:"error,omitempty"`
+	Duration string `json:"duration"`
 }

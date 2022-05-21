@@ -104,11 +104,11 @@ func TestHealthcheck_generateResponse(t *testing.T) {
 		assert.Equal(t, "OK", response.Status)
 		assert.Len(t, response.Checks, 3)
 		assert.Empty(t, response.Checks["check1"].Error)
-		assert.InDelta(t, wantDuration1, response.Checks["check1"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration1, mustParseDuration(t, response.Checks["check1"].Duration), float64(time.Millisecond*25))
 		assert.Empty(t, response.Checks["check2"].Error)
-		assert.InDelta(t, wantDuration2, response.Checks["check2"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration2, mustParseDuration(t, response.Checks["check2"].Duration), float64(time.Millisecond*25))
 		assert.Empty(t, response.Checks["check3"].Error)
-		assert.InDelta(t, wantDuration3, response.Checks["check3"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration3, mustParseDuration(t, response.Checks["check3"].Duration), float64(time.Millisecond*25))
 	})
 
 	t.Run("should return internal server error when a checker panics", func(t *testing.T) {
@@ -151,11 +151,11 @@ func TestHealthcheck_generateResponse(t *testing.T) {
 		assert.Equal(t, "Internal Server Error", response.Status)
 		assert.Len(t, response.Checks, 3)
 		assert.Empty(t, response.Checks["check1"].Error)
-		assert.InDelta(t, wantDuration1, response.Checks["check1"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration1, mustParseDuration(t, response.Checks["check1"].Duration), float64(time.Millisecond*25))
 		assert.Equal(t, response.Checks["check2"].Error, "checker panicked: panicked")
-		assert.InDelta(t, wantDuration2, response.Checks["check2"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration2, mustParseDuration(t, response.Checks["check2"].Duration), float64(time.Millisecond*25))
 		assert.Equal(t, response.Checks["check3"].Error, "some error")
-		assert.InDelta(t, wantDuration3, response.Checks["check3"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration3, mustParseDuration(t, response.Checks["check3"].Duration), float64(time.Millisecond*25))
 	})
 
 	t.Run("should return service unavailable when one check fails", func(t *testing.T) {
@@ -196,11 +196,11 @@ func TestHealthcheck_generateResponse(t *testing.T) {
 		assert.Equal(t, "Service Unavailable", response.Status)
 		assert.Len(t, response.Checks, 3)
 		assert.Empty(t, response.Checks["check1"].Error)
-		assert.InDelta(t, wantDuration1, response.Checks["check1"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration1, mustParseDuration(t, response.Checks["check1"].Duration), float64(time.Millisecond*25))
 		assert.Empty(t, response.Checks["check2"].Error)
-		assert.InDelta(t, wantDuration2, response.Checks["check2"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration2, mustParseDuration(t, response.Checks["check2"].Duration), float64(time.Millisecond*25))
 		assert.Equal(t, response.Checks["check3"].Error, "some error")
-		assert.InDelta(t, wantDuration3, response.Checks["check3"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration3, mustParseDuration(t, response.Checks["check3"].Duration), float64(time.Millisecond*25))
 	})
 
 	t.Run("should return service unavailable when one Checker times out", func(t *testing.T) {
@@ -242,12 +242,19 @@ func TestHealthcheck_generateResponse(t *testing.T) {
 		assert.Equal(t, "Service Unavailable", response.Status)
 		assert.Len(t, response.Checks, 3)
 		assert.Empty(t, response.Checks["check1"].Error)
-		assert.InDelta(t, wantDuration1, response.Checks["check1"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration1, mustParseDuration(t, response.Checks["check1"].Duration), float64(time.Millisecond*25))
 		assert.Empty(t, response.Checks["check2"].Error)
-		assert.InDelta(t, wantDuration2, response.Checks["check2"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantDuration2, mustParseDuration(t, response.Checks["check2"].Duration), float64(time.Millisecond*25))
 		assert.Equal(t, response.Checks["check3"].Error, context.DeadlineExceeded.Error())
-		assert.InDelta(t, wantTimeout, response.Checks["check3"].Duration, float64(time.Millisecond*25))
+		assert.InDelta(t, wantTimeout, mustParseDuration(t, response.Checks["check3"].Duration), float64(time.Millisecond*25))
 	})
+}
+
+func mustParseDuration(t *testing.T, s string) time.Duration {
+	t.Helper()
+	d, err := time.ParseDuration(s)
+	require.NoError(t, err)
+	return d
 }
 
 func TestHealthcheck_Health(t *testing.T) {
